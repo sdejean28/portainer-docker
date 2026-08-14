@@ -115,6 +115,9 @@ update_portainer() {
 
 if [[ -f "$COMPOSE_FILE" ]]; then
     update_portainer
+elif [[ "$QUIET" == true ]]; then
+    echo "Error: '$COMPOSE_FILE' was not found; unattended installation is not supported." >&2
+    exit 1
 else
     install_portainer
 fi
