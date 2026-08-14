@@ -9,6 +9,17 @@ readonly AGENT_TEMPLATE="docker-compose-agent.yml"
 
 cd "$SCRIPT_DIR"
 
+QUIET=false
+if [[ ${1:-} == "/quiet" ]]; then
+    QUIET=true
+    shift
+fi
+
+if (( $# > 0 )); then
+    echo "Usage: $0 [/quiet]" >&2
+    exit 1
+fi
+
 if docker compose version >/dev/null 2>&1; then
     COMPOSE=(docker compose)
 elif command -v docker-compose >/dev/null 2>&1; then
@@ -17,6 +28,23 @@ else
     echo "Error: Docker Compose is not installed." >&2
     exit 1
 fi
+
+confirm_action() {
+    local action=$1 answer
+
+    if [[ "$QUIET" == true ]]; then
+        return
+    fi
+
+    read -r -p "Do you want to $action? [y/N]: " answer
+    case "$answer" in
+        y|Y|yes|YES|Yes) ;;
+        *)
+            echo "Cancelled."
+            exit 0
+            ;;
+    esac
+}
 
 install_portainer() {
     local template service label choice
@@ -48,6 +76,8 @@ install_portainer() {
         exit 1
     fi
 
+    confirm_action "install Portainer $label"
+
     cp -- "$template" "$COMPOSE_FILE"
     echo "Installing Portainer $label..."
     "${COMPOSE[@]}" -f "$COMPOSE_FILE" pull "$service"
@@ -74,6 +104,8 @@ update_portainer() {
     echo "Current Portainer $label state:"
     "${COMPOSE[@]}" -f "$COMPOSE_FILE" ps "$service"
     echo
+
+    confirm_action "update and restart Portainer $label"
 
     echo "Updating Portainer $label..."
     "${COMPOSE[@]}" -f "$COMPOSE_FILE" pull "$service"
