@@ -71,6 +71,10 @@ update_portainer() {
         exit 1
     fi
 
+    echo "Current Portainer $label state:"
+    "${COMPOSE[@]}" -f "$COMPOSE_FILE" ps "$service"
+    echo
+
     echo "Updating Portainer $label..."
     "${COMPOSE[@]}" -f "$COMPOSE_FILE" pull "$service"
     "${COMPOSE[@]}" -f "$COMPOSE_FILE" up -d --force-recreate "$service"
