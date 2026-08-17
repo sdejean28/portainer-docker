@@ -9,3 +9,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
  
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.29.0.0/24
